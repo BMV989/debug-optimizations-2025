@@ -1,8 +1,9 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 
 namespace JPEG.Images;
 
-class Matrix
+public class Matrix
 {
 	public readonly Pixel[,] Pixels;
 	public readonly int Height;
@@ -53,13 +54,5 @@ class Matrix
 		return bmp;
 	}
 
-	public static int ToByte(double d)
-	{
-		var val = (int)d;
-		if (val > byte.MaxValue)
-			return byte.MaxValue;
-		if (val < byte.MinValue)
-			return byte.MinValue;
-		return val;
-	}
+	private static int ToByte(double d) => (byte)Math.Clamp(d, byte.MinValue, byte.MaxValue);
 }
