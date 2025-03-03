@@ -53,9 +53,7 @@ public class JpegProcessor : IJpegProcessor
 			}
 		}
 
-		long bitsCount;
-		Dictionary<BitsWithLength, byte> decodeTable;
-		var compressedBytes = HuffmanCodec.Encode(allQuantizedBytes, out decodeTable, out bitsCount);
+		var compressedBytes = HuffmanCodec.Encode(allQuantizedBytes, out var decodeTable, out var bitsCount);
 
 		return new CompressedImage
 		{
@@ -99,7 +97,7 @@ public class JpegProcessor : IJpegProcessor
 
 		for (var y = 0; y < height; y++)
 		for (var x = 0; x < width; x++)
-			subMatrix[y, x] = subMatrix[y, x] + shiftValue;
+			subMatrix[y, x] += shiftValue;
 	}
 
 	private static void SetPixels(Matrix matrix, double[,] a, double[,] b, double[,] c, PixelFormat format,
@@ -125,8 +123,8 @@ public class JpegProcessor : IJpegProcessor
 
 	private static IEnumerable<byte> ZigZagScan(byte[,] channelFreqs)
 	{
-		return new[]
-		{
+		return
+		[
 			channelFreqs[0, 0], channelFreqs[0, 1], channelFreqs[1, 0], channelFreqs[2, 0], channelFreqs[1, 1],
 			channelFreqs[0, 2], channelFreqs[0, 3], channelFreqs[1, 2],
 			channelFreqs[2, 1], channelFreqs[3, 0], channelFreqs[4, 0], channelFreqs[3, 1], channelFreqs[2, 2],
@@ -143,7 +141,7 @@ public class JpegProcessor : IJpegProcessor
 			channelFreqs[3, 7], channelFreqs[4, 7], channelFreqs[5, 6],
 			channelFreqs[6, 5], channelFreqs[7, 4], channelFreqs[7, 5], channelFreqs[6, 6], channelFreqs[5, 7],
 			channelFreqs[6, 7], channelFreqs[7, 6], channelFreqs[7, 7]
-		};
+		];
 	}
 
 	private static byte[,] ZigZagUnScan(IReadOnlyList<byte> quantizedBytes)
@@ -190,9 +188,9 @@ public class JpegProcessor : IJpegProcessor
 		var result = new byte[channelFreqs.GetLength(0), channelFreqs.GetLength(1)];
 
 		var quantizationMatrix = GetQuantizationMatrix(quality);
-		for (int y = 0; y < channelFreqs.GetLength(0); y++)
+		for (var y = 0; y < channelFreqs.GetLength(0); y++)
 		{
-			for (int x = 0; x < channelFreqs.GetLength(1); x++)
+			for (var x = 0; x < channelFreqs.GetLength(1); x++)
 			{
 				result[y, x] = (byte)(channelFreqs[y, x] / quantizationMatrix[y, x]);
 			}
@@ -206,9 +204,9 @@ public class JpegProcessor : IJpegProcessor
 		var result = new double[quantizedBytes.GetLength(0), quantizedBytes.GetLength(1)];
 		var quantizationMatrix = GetQuantizationMatrix(quality);
 
-		for (int y = 0; y < quantizedBytes.GetLength(0); y++)
+		for (var y = 0; y < quantizedBytes.GetLength(0); y++)
 		{
-			for (int x = 0; x < quantizedBytes.GetLength(1); x++)
+			for (var x = 0; x < quantizedBytes.GetLength(1); x++)
 			{
 				result[y, x] =
 					((sbyte)quantizedBytes[y, x]) *
@@ -221,7 +219,7 @@ public class JpegProcessor : IJpegProcessor
 
 	private static int[,] GetQuantizationMatrix(int quality)
 	{
-		if (quality < 1 || quality > 99)
+		if (quality is < 1 or > 99)
 			throw new ArgumentException("quality must be in [1,99] interval");
 
 		var multiplier = quality < 50 ? 5000 / quality : 200 - 2 * quality;
@@ -238,9 +236,9 @@ public class JpegProcessor : IJpegProcessor
 			{ 72, 92, 95, 98, 112, 100, 103, 99 }
 		};
 
-		for (int y = 0; y < result.GetLength(0); y++)
+		for (var y = 0; y < result.GetLength(0); y++)
 		{
-			for (int x = 0; x < result.GetLength(1); x++)
+			for (var x = 0; x < result.GetLength(1); x++)
 			{
 				result[y, x] = (multiplier * result[y, x] + 50) / 100;
 			}
