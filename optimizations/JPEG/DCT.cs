@@ -18,8 +18,8 @@ public class DCT
         for (var i = 0; i < dctSize; i++)
         for (var j = 0; j < dctSize; j++)
         {
-            var ck = i == 0 ? Math.Sqrt(dctSize) : Math.Sqrt(dctSize / 2d);
-            _basisMatrix[i, j] = 1 / ck * Math.Cos(Math.PI / dctSize * (j + 0.5) * i);
+            var ci = i == 0 ? Math.Sqrt(dctSize) : Math.Sqrt(dctSize / 2d);
+            _basisMatrix[i, j] = 1 / ci * Math.Cos(Math.PI / dctSize * (j + 0.5) * i);
             _basisMatrixT[j, i] = _basisMatrix[i, j];
         }
     }
