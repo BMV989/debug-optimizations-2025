@@ -8,7 +8,8 @@ public readonly record struct Pixel
 
 	public Pixel(double firstComponent, double secondComponent, double thirdComponent, PixelFormat pixelFormat)
 	{
-		switch (pixelFormat)
+		format = pixelFormat;
+		switch (format)
 		{
 			case PixelFormat.RGB:
 				r = firstComponent;
