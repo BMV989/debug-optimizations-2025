@@ -51,13 +51,11 @@ public class DCT
 	private static double[,] MatrixMultiply(double[,] matrix1, double[,] matrix2)
 	{
 		var result = new double[matrix1.GetLength(0), matrix2.GetLength(1)];
-
-		Parallel.For(0, matrix1.GetLength(0), i =>
-		{
-			for (var j = 0; j < matrix2.GetLength(1); j++)
-			for (var k = 0; k < matrix1.GetLength(1); k++)
-				result[i, j] = matrix1[i, k] * matrix2[k, j];
-		});
+		
+		for (var i = 0; i < result.GetLength(0); i++)
+		for (var j = 0; j < matrix2.GetLength(1); j++)
+		for (var k = 0; k < matrix1.GetLength(1); k++)
+			result[i, j] = matrix1[i, k] * matrix2[k, j];
 		
 		return result;
 	}
