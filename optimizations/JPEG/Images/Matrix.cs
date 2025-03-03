@@ -1,58 +1,89 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace JPEG.Images;
 
 public class Matrix
 {
-	public readonly Pixel[,] Pixels;
-	public readonly int Height;
-	public readonly int Width;
+    public readonly int Width;
+    public readonly int Height;
+    public readonly Pixel[,] Pixels;
 
-	public Matrix(int height, int width)
-	{
-		Height = height;
-		Width = width;
+    public Matrix(int height, int width)
+    {
+        Width = width;
+        Height = height;
+        Pixels = new Pixel[height, width];
+    }
 
-		Pixels = new Pixel[height, width];
-		for (var i = 0; i < height; ++i)
-		for (var j = 0; j < width; ++j)
-			Pixels[i, j] = new Pixel(0, 0, 0, PixelFormat.RGB);
-	}
+    public static unsafe explicit operator Matrix(Bitmap bmp)
+    {
+        var width = bmp.Width - bmp.Width % 8;
+        var height = bmp.Height - bmp.Height % 8;
+        var matrix = new Matrix(height, width);
+        var buff = bmp.LockBits(new Rectangle(0, 0, width, height), 
+            ImageLockMode.ReadOnly, bmp.PixelFormat);
 
-	public static explicit operator Matrix(Bitmap bmp)
-	{
-		var height = bmp.Height - bmp.Height % 8;
-		var width = bmp.Width - bmp.Width % 8;
-		var matrix = new Matrix(height, width);
+        try
+        {
+            for (var h = 0; h < height; h++)
+            {
+                var pixelPtr = (byte*)buff.Scan0 + h * buff.Stride;
+                for (var w = 0; w < width; w++)
+                {
+                    var blue = *pixelPtr++;
+                    var green = *pixelPtr++;
+                    var red = *pixelPtr++;
+                    matrix.Pixels[h, w] = new Pixel(red, green, blue, PixelFormat.RGB);
+                }
+            }
 
-		for (var j = 0; j < height; j++)
-		{
-			for (var i = 0; i < width; i++)
-			{
-				var pixel = bmp.GetPixel(i, j);
-				matrix.Pixels[j, i] = new Pixel(pixel.R, pixel.G, pixel.B, PixelFormat.RGB);
-			}
-		}
+            return matrix;
+        }
+        finally
+        {
+            bmp.UnlockBits(buff);
+        }
+    }
 
-		return matrix;
-	}
+    public static unsafe explicit operator Bitmap(Matrix matrix)
+    {
+        var width = matrix.Width;
+        var height = matrix.Height;
+    
+        var bmp = new Bitmap(matrix.Width, matrix.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+        var buff = bmp.LockBits(new Rectangle(0, 0, width, height), 
+            ImageLockMode.WriteOnly, bmp.PixelFormat);
 
-	public static explicit operator Bitmap(Matrix matrix)
-	{
-		var bmp = new Bitmap(matrix.Width, matrix.Height);
+        try
+        {
+            for (var h = 0; h < height; h++)
+            {
+                var pixelPtr = (byte*)buff.Scan0 + h * buff.Stride;
+                for (var w = 0; w < width; w++)
+                {
+                    var pixel = matrix.Pixels[h, w];
+                    
+                    *pixelPtr = ToByte(pixel.B);
+                    pixelPtr++;
+                    
+                    *pixelPtr = ToByte(pixel.G);
+                    pixelPtr++;
+                    
+                    *pixelPtr = ToByte(pixel.R);
+                    pixelPtr++;
+                }
+            }
 
-		for (var j = 0; j < bmp.Height; j++)
-		{
-			for (var i = 0; i < bmp.Width; i++)
-			{
-				var pixel = matrix.Pixels[j, i];
-				bmp.SetPixel(i, j, Color.FromArgb(ToByte(pixel.R), ToByte(pixel.G), ToByte(pixel.B)));
-			}
-		}
+            return bmp;
+        }
+        finally
+        {
+            bmp.UnlockBits(buff);
+        }
+    }
 
-		return bmp;
-	}
 
-	private static int ToByte(double d) => (byte)Math.Clamp(d, byte.MinValue, byte.MaxValue);
+    private static byte ToByte(double d) => (byte)Math.Clamp(d, byte.MinValue, byte.MaxValue);
 }

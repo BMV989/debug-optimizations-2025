@@ -123,8 +123,8 @@ public class JpegProcessor : IJpegProcessor
 
 	private static IEnumerable<byte> ZigZagScan(byte[,] channelFreqs)
 	{
-		return
-		[
+		return new []
+			{
 			channelFreqs[0, 0], channelFreqs[0, 1], channelFreqs[1, 0], channelFreqs[2, 0], channelFreqs[1, 1],
 			channelFreqs[0, 2], channelFreqs[0, 3], channelFreqs[1, 2],
 			channelFreqs[2, 1], channelFreqs[3, 0], channelFreqs[4, 0], channelFreqs[3, 1], channelFreqs[2, 2],
@@ -141,7 +141,7 @@ public class JpegProcessor : IJpegProcessor
 			channelFreqs[3, 7], channelFreqs[4, 7], channelFreqs[5, 6],
 			channelFreqs[6, 5], channelFreqs[7, 4], channelFreqs[7, 5], channelFreqs[6, 6], channelFreqs[5, 7],
 			channelFreqs[6, 7], channelFreqs[7, 6], channelFreqs[7, 7]
-		];
+		};
 	}
 
 	private static byte[,] ZigZagUnScan(IReadOnlyList<byte> quantizedBytes)
